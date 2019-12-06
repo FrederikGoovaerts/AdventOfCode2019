@@ -19,7 +19,7 @@ for (const el of youPath) {
     break;
   }
 }
-console.log(distTo(same, youPath) + distTo(same, sanPath));
+console.log(distTo(same, youPath) + distTo(same, sanPath) - 2);
 
 // helper
 
