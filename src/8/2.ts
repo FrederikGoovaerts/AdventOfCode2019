@@ -34,5 +34,10 @@ for (let i = 0; i < pixels; i++) {
   result.push(getPixel(i));
 }
 for (let i = 0; i < height; i++) {
-  console.log(result.slice(i*width, (i+1) * width).join(''))
+  console.log(
+    result
+      .map(val => (val === 1 ? "##" : "  "))
+      .slice(i * width, (i + 1) * width)
+      .join("")
+  );
 }
