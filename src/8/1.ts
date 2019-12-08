@@ -17,7 +17,7 @@ for (let i = 0; i < layers.length; i++) {
 }
 
 for (let i = 0; i < input.length; i++) {
-  layers[Math.floor(i/pixels)].push(input[i]);
+  layers[Math.floor(i / pixels)].push(input[i]);
 }
 
 let currentBest = Infinity;
@@ -30,4 +30,7 @@ for (const layer of layers) {
   }
 }
 
-console.log(currentLayer.filter(val => val === 1).length * currentLayer.filter(val => val === 2).length)
+console.log(
+  currentLayer.filter(val => val === 1).length *
+    currentLayer.filter(val => val === 2).length
+);

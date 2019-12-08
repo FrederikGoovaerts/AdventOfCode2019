@@ -3,23 +3,37 @@ import { intcode } from "../shared/intcode";
 
 const input = fs
   .readFileSync("input", "utf8")
-  .split('\n')[0]
+  .split("\n")[0]
   .split(",")
   .map(Number);
 
 function generateSettings(length: number, start: number): number[][] {
-  return generateSettingsRec(new Array(length).fill(-1), start, (new Array(length)).fill(0).map((val,index)=> index));
+  return generateSettingsRec(
+    new Array(length).fill(-1),
+    start,
+    new Array(length).fill(0).map((val, index) => index)
+  );
 }
 
-function generateSettingsRec(acc: number[], curr: number, openLocs: number[]): number[][] {
-  if(openLocs.length === 0) {
+function generateSettingsRec(
+  acc: number[],
+  curr: number,
+  openLocs: number[]
+): number[][] {
+  if (openLocs.length === 0) {
     return [acc];
   }
   let result: number[][] = [];
-  for(const loc of openLocs) {
-    const res = [...acc]
+  for (const loc of openLocs) {
+    const res = [...acc];
     res[loc] = curr;
-    result = result.concat(generateSettingsRec(res, curr + 1, openLocs.filter((val) => val !== loc)));
+    result = result.concat(
+      generateSettingsRec(
+        res,
+        curr + 1,
+        openLocs.filter(val => val !== loc)
+      )
+    );
   }
   return result;
 }
@@ -37,13 +51,13 @@ for (const combination of combinations) {
   }
   let currentInput = 0;
   let currentAmp = 0;
-  while(true) {
+  while (true) {
     const out = amps[currentAmp].next(currentInput); // Give input and yield output
     if (out.done) {
       break;
     }
     if (out.value === undefined) {
-      throw new Error('OUTSTATE INCORRECT ' + currentAmp + ' ' + out.value);
+      throw new Error("OUTSTATE INCORRECT " + currentAmp + " " + out.value);
     }
     currentInput = out.value;
     amps[currentAmp].next(); // Run until next request for input
@@ -54,5 +68,3 @@ for (const combination of combinations) {
   }
 }
 console.log(currentBest);
-
-

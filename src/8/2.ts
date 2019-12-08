@@ -17,7 +17,7 @@ for (let i = 0; i < layers.length; i++) {
 }
 
 for (let i = 0; i < input.length; i++) {
-  layers[Math.floor(i/pixels)].push(input[i]);
+  layers[Math.floor(i / pixels)].push(input[i]);
 }
 
 function getPixel(pos: number): number {
