@@ -1,8 +1,11 @@
 export function* intcode(
   programBase: number[]
 ): Generator<number | undefined, number[], number> {
-  const program = [...programBase];
+  const endPadding = new Array(200000);
+  endPadding.fill(0);
+  const program = [...programBase].concat(endPadding);
   let instructionPointer: number = 0;
+  let relativeOffset: number = 0;
 
   while (instructionPointer >= 0) {
     const operation = program[instructionPointer] % 100;
@@ -21,7 +24,7 @@ export function* intcode(
         break;
       case 3: {
         const input = yield undefined;
-        put(instructionPointer + 1, input);
+        put(instructionPointer + 1, input, modes[0]);
         instructionPointer += 2;
         break;
       }
@@ -43,6 +46,9 @@ export function* intcode(
       case 8:
         check((a, b) => a === b, modes);
         break;
+      case 9:
+        relativeUpdate(modes);
+        break;
       case 99:
         halt();
         break;
@@ -59,14 +65,23 @@ export function* intcode(
     switch (mode) {
       case 0:
         return program[program[value]];
-      default:
       case 1:
         return program[value];
+      case 2:
+        return program[relativeOffset + program[value]];
     }
+    return -1;
   }
 
-  function put(loc: number, value: number): void {
-    program[program[loc]] = value;
+  function put(loc: number, value: number, mode: number): void {
+    switch (mode) {
+      case 0:
+        program[program[loc]] = value;
+        break;
+      case 2:
+        program[relativeOffset + program[loc]] = value;
+        break;
+    }
   }
 
   // OPcode implementations
@@ -75,7 +90,7 @@ export function* intcode(
   function add(modes: number[]): void {
     const a = get(instructionPointer + 1, modes[0]);
     const b = get(instructionPointer + 2, modes[1]);
-    put(instructionPointer + 3, a + b);
+    put(instructionPointer + 3, a + b, modes[2]);
 
     instructionPointer += 4;
   }
@@ -84,7 +99,7 @@ export function* intcode(
   function multiply(modes: number[]): void {
     const a = get(instructionPointer + 1, modes[0]);
     const b = get(instructionPointer + 2, modes[1]);
-    put(instructionPointer + 3, a * b);
+    put(instructionPointer + 3, a * b, modes[2]);
 
     instructionPointer += 4;
   }
@@ -108,12 +123,18 @@ export function* intcode(
     const a = get(instructionPointer + 1, modes[0]);
     const b = get(instructionPointer + 2, modes[1]);
     if (checker(a, b)) {
-      put(instructionPointer + 3, 1);
+      put(instructionPointer + 3, 1, modes[2]);
     } else {
-      put(instructionPointer + 3, 0);
+      put(instructionPointer + 3, 0, modes[2]);
     }
 
     instructionPointer += 4;
+  }
+
+  // 09: update relative offset
+  function relativeUpdate(modes: number[]): void {
+    relativeOffset += get(instructionPointer + 1, modes[0]);
+    instructionPointer += 2;
   }
 
   // 99: halt
