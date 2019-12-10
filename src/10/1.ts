@@ -13,7 +13,7 @@ const asteroids: Array<Asteroid> = [];
 for (let x = 0; x < xLen; x++) {
   for (let y = 0; y < yLen; y++) {
     if (input[y][x] === "#") {
-      asteroids.push({ x, y: yLen - y });
+      asteroids.push({ x, y });
     }
   }
 }
