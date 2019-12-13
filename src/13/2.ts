@@ -10,9 +10,8 @@ input[0] = 2;
 const screen: number[][] = [];
 let score: number = 0;
 
-let paddleSynced = false;
-let direction = 1;
-let ballY = 0;
+let paddleX = 0;
+let ballX = 0;
 
 const runner = intcodeNext(input);
 start();
@@ -31,10 +30,16 @@ async function start() {
       arr[x] = val;
       screen[y] = arr;
     }
+    if (val === 4) {
+      ballX = x;
+    }
+    if (val === 3) {
+      paddleX = x;
+    }
     if (initDone) {
-      await new Promise(resolve => {
-        setTimeout(resolve, 300);
-      });
+      // await new Promise(resolve => {
+      //   setTimeout(resolve, 300);
+      // });
       renderScreen();
     }
   }
@@ -43,11 +48,10 @@ async function start() {
 function getNextOutput(): number {
   let next = runner.next();
   while (next.value.type === feedbackType.INPUT) {
-    if (ballY === screen.length - 3) {
+    if (ballX === paddleX) {
       next = runner.next(0);
-      direction = -direction;
     } else {
-      next = runner.next(paddleSynced ? 0 : direction);
+      next = runner.next((ballX - paddleX) / Math.abs(ballX - paddleX));
     }
   }
   if (next.value.type === feedbackType.OUTPUT) {
@@ -61,25 +65,9 @@ function renderScreen() {
   let ball = -1;
   let paddle = -1;
   screen.forEach((arr: number[], i: number) => {
-    if (ball === -1) {
-      ball = arr.indexOf(4);
-      if (ball !== -1) {
-        ballY = i;
-        if (arr[ball + direction] !== 0) {
-          direction = -direction;
-        }
-      }
-    }
-    if (paddle === -1) {
-      paddle = arr.indexOf(3);
-    }
     console.log(arr.map(val => prettify(val)).join(""));
   });
-  console.log(`score: ${score}, direction: ${direction}`);
-  if (ball === -1 || paddle === -1) {
-    return;
-  }
-  paddleSynced = direction === 1 ? paddle > ball : paddle < ball;
+  console.log(`score: ${score}`);
 }
 
 function prettify(input: number): string {
