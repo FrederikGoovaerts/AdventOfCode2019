@@ -1,9 +1,11 @@
 import * as fs from "fs";
 
 const input = fs
-  .readFileSync("in3", "utf8")
+  .readFileSync("input", "utf8")
   .trim()
   .split("\n");
+
+// First we build up the graph from end to beginning as a map
 
 interface Amount {
   id: string;
@@ -30,94 +32,28 @@ input.forEach(line => {
   reactions[res.id] = { nb: res.nb, reqs };
 });
 
-const waste: Record<string, number> = {};
+// Then we calculate the exact ore cost of creating one element without respecting the amounts created
 
-// Stuff for later calculation
-const wasteStates: string[] = [];
-const priceTrend: number[] = [];
-let repeatStart = -1;
-let init = 0;
-let initLength = 0;
-let repeated = 0;
-let repeatedLength = 0;
+const generationTable: Record<string, number> = {};
 
-while (true) {
-  const price = performDistillation();
-  const wasteString = serializeWaste();
-
-  if (wasteStates.includes(wasteString)) {
-    repeatStart = wasteStates.indexOf(wasteString);
-    initLength = repeatStart;
-    repeatedLength = priceTrend.length - repeatedLength;
-    for (let i = 0; i < repeatStart; i++) {
-      init += priceTrend[i];
-    }
-    for (let i = repeatStart; i < priceTrend.length; i++) {
-      repeated += priceTrend[i];
-    }
-    break;
-  }
-  priceTrend.push(price);
-  wasteStates.push(wasteString);
-}
-
-let fuel = initLength;
-let ore = 1000000000000 - init;
-// First we take off some big chunks
-while (ore >= repeated) {
-  ore -= repeated;
-  fuel += repeatedLength;
-}
-// Then we tip-toe to the solution
-let index = repeatStart;
-while (priceTrend[index] <= ore) {
-  fuel++;
-  ore -= priceTrend[index];
-  index++;
-  if (index >= priceTrend.length) {
-    index = repeatStart;
-  }
-}
-console.log(fuel, ore);
-
-// Helpers
-
-function serializeWaste() {
-  let result = "";
-  for (const key of Object.keys(waste).sort()) {
-    if (waste[key]) {
-      result += `${key}${waste[key]}`;
-    }
-  }
-  return result;
-}
-
-function performDistillation(): number {
-  const refinery = ["FUEL"];
-  let orePrice = 0;
-  while (!(refinery.length === 0)) {
-    const nextProd = refinery.pop()!;
-    const reaction = reactions[nextProd];
-    for (let i = 1; i < reaction.nb; i++) {
-      if (refinery.includes(nextProd)) {
-        refinery.splice(refinery.indexOf(nextProd), 1);
-      } else {
-        waste[nextProd] = (waste[nextProd] || 0) + 1;
+function calculateFor(input: string) {
+  const formula = reactions[input];
+  if (formula.reqs[0].id === "ORE") {
+    generationTable[input] = formula.reqs[0].nb / formula.nb;
+  } else {
+    let cost = 0;
+    formula.reqs.forEach(req => {
+      if (generationTable[req.id] === undefined) {
+        calculateFor(req.id);
       }
-    }
-    reaction.reqs.forEach(req => {
-      if (req.id === "ORE") {
-        orePrice += req.nb;
-      } else {
-        for (let i = 0; i < req.nb; i++) {
-          if (waste[req.id]) {
-            waste[req.id] = (waste[req.id] || 0) - 1;
-          } else {
-            refinery.push(req.id);
-          }
-        }
-      }
+      const reqCost = generationTable[req.id];
+      cost += reqCost * req.nb;
     });
+    generationTable[input] = cost / formula.nb;
   }
-  return orePrice;
 }
+calculateFor("FUEL");
+
+// Use marginal cost for one FUEL to approximate how many we would be able to make without calculating waste
+
+console.log(Math.floor(1000000000000 / generationTable["FUEL"]));
