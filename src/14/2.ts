@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
 const input = fs
-  .readFileSync("input", "utf8")
+  .readFileSync("in3", "utf8")
   .trim()
   .split("\n");
 
@@ -30,7 +30,7 @@ input.forEach(line => {
   reactions[res.id] = { nb: res.nb, reqs };
 });
 
-const waste: string[] = [];
+const waste: Record<string, number> = {};
 
 // Stuff for later calculation
 const wasteStates: string[] = [];
@@ -43,7 +43,7 @@ let repeatedLength = 0;
 
 while (true) {
   const price = performDistillation();
-  const wasteString = waste.sort().join(",");
+  const wasteString = serializeWaste();
 
   if (wasteStates.includes(wasteString)) {
     repeatStart = wasteStates.indexOf(wasteString);
@@ -82,6 +82,16 @@ console.log(fuel, ore);
 
 // Helpers
 
+function serializeWaste() {
+  let result = "";
+  for (const key of Object.keys(waste).sort()) {
+    if (waste[key]) {
+      result += `${key}${waste[key]}`;
+    }
+  }
+  return result;
+}
+
 function performDistillation(): number {
   const refinery = ["FUEL"];
   let orePrice = 0;
@@ -92,7 +102,7 @@ function performDistillation(): number {
       if (refinery.includes(nextProd)) {
         refinery.splice(refinery.indexOf(nextProd), 1);
       } else {
-        waste.push(nextProd);
+        waste[nextProd] = (waste[nextProd] || 0) + 1;
       }
     }
     reaction.reqs.forEach(req => {
@@ -100,8 +110,8 @@ function performDistillation(): number {
         orePrice += req.nb;
       } else {
         for (let i = 0; i < req.nb; i++) {
-          if (waste.includes(req.id)) {
-            waste.splice(waste.indexOf(req.id), 1);
+          if (waste[req.id]) {
+            waste[req.id] = (waste[req.id] || 0) - 1;
           } else {
             refinery.push(req.id);
           }
