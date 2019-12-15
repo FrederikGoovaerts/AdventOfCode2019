@@ -46,9 +46,10 @@ for (const combination of combinations) {
     runner.next();
     runner.next(combination[i]);
     const result = runner.next(nextInput);
-    if (!result.done && result.value !== undefined) {
-      nextInput = result.value;
+    if (result.value.type !== "OUTPUT") {
+      throw new Error("Expected intcode to produce output");
     }
+    nextInput = result.value.output;
   }
   if (nextInput > currentBest) {
     currentBest = nextInput;

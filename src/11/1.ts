@@ -26,11 +26,18 @@ let painted: Coord[] = [];
 const runner = intcode(input);
 
 let state = runner.next();
-while (!state.done) {
-  const newColor = runner.next(painted.some(matches) ? 1 : 0).value as number;
-  paint(newColor);
-  const newDir = runner.next().value as number;
-  updateDirection(newDir);
+while (state.value.type !== "HALT") {
+  let next = runner.next(painted.some(matches) ? 1 : 0);
+  if (next.value.type !== "OUTPUT") {
+    throw new Error("Expected intcode to produce output");
+  }
+  paint(next.value.output);
+
+  next = runner.next();
+  if (next.value.type !== "OUTPUT") {
+    throw new Error("Expected intcode to produce output");
+  }
+  updateDirection(next.value.output);
   // Some expert debugging:
   // console.log(
   //   state.value,

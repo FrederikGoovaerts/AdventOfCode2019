@@ -1,6 +1,16 @@
+export enum feedbackType {
+  HALT = "HALT",
+  INPUT = "INPUT",
+  OUTPUT = "OUTPUT"
+}
+export type feedback =
+  | { type: feedbackType.HALT; output: number[] }
+  | { type: feedbackType.INPUT }
+  | { type: feedbackType.OUTPUT; output: number };
+
 export function* intcode(
   programBase: number[]
-): Generator<number | undefined, number[], number> {
+): Generator<feedback, { type: undefined }, number> {
   const endPadding = new Array(200000);
   endPadding.fill(0);
   const program = [...programBase].concat(endPadding);
@@ -23,14 +33,14 @@ export function* intcode(
         multiply(modes);
         break;
       case 3: {
-        const input = yield undefined;
+        const input = yield { type: feedbackType.INPUT };
         put(instructionPointer + 1, input, modes[0]);
         instructionPointer += 2;
         break;
       }
       case 4: {
         const output = get(instructionPointer + 1, modes[0]);
-        yield output;
+        yield { type: feedbackType.OUTPUT, output };
         instructionPointer += 2;
         break;
       }
@@ -51,13 +61,14 @@ export function* intcode(
         break;
       case 99:
         halt();
+        yield { type: feedbackType.HALT, output: program };
         break;
       default:
         throw new Error(`OPCODE: ${program[instructionPointer]}`);
     }
   }
 
-  return program;
+  return { type: undefined };
 
   // General utility
 

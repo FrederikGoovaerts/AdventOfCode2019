@@ -45,22 +45,23 @@ for (const combination of combinations) {
   const amps = [];
   for (let i = 0; i < 5; i++) {
     const amp = intcode([...input]);
-    let shouldBeUndef = amp.next();
-    shouldBeUndef = amp.next(combination[i]);
+    amp.next();
+    amp.next(combination[i]);
     amps.push(amp);
   }
   let currentInput = 0;
   let currentAmp = 0;
   while (true) {
-    const out = amps[currentAmp].next(currentInput); // Give input and yield output
-    if (out.done) {
+    let next = amps[currentAmp].next(currentInput); // Give input and yield output
+    if (next.value.type !== "OUTPUT") {
+      throw new Error("Expected intcode to produce output");
+    }
+    currentInput = next.value.output;
+    next = amps[currentAmp].next(); // Run until next input or halt
+    // Output is ready when the last amp halts
+    if (next.value.type === "HALT" && currentAmp === 4) {
       break;
     }
-    if (out.value === undefined) {
-      throw new Error("OUTSTATE INCORRECT " + currentAmp + " " + out.value);
-    }
-    currentInput = out.value;
-    amps[currentAmp].next(); // Run until next request for input
     currentAmp = (currentAmp + 1) % 5;
   }
   if (currentInput > currentBest) {

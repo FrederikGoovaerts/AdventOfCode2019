@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { intcode } from "../shared/intcode";
+import { intcode, feedbackType } from "../shared/intcode";
 
 const program: number[] = fs
   .readFileSync("input", "utf8")
@@ -8,11 +8,11 @@ const program: number[] = fs
   .map((n: string) => Number(n));
 
 program[1] = 12;
-program[2] = 2
+program[2] = 2;
 
 const runner = intcode(program);
-const result = runner.next();
-if (result.done) {
-  console.log(result.value[0]);
+const next = runner.next();
+if (next.value.type !== feedbackType.HALT) {
+  throw new Error("Expected intcode to halt");
 }
-
+console.log(next.value.output[0]);

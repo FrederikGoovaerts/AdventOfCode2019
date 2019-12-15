@@ -1,6 +1,7 @@
 import * as fs from "fs";
-import { intcodeNext, feedbackType } from "../shared/intcode-next";
-const RENDER = true;
+import { intcode, feedbackType } from "../shared/intcode";
+
+const RENDER = false;
 
 const input = fs
   .readFileSync("input", "utf8")
@@ -14,7 +15,7 @@ let score: number = 0;
 let paddleX = 0;
 let ballX = 0;
 
-const runner = intcodeNext(input);
+const runner = intcode(input);
 start();
 
 async function start() {

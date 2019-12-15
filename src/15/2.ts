@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import assert from "assert";
-import { intcodeNext, feedbackType } from "../shared/intcode-next";
+import { intcode, feedbackType } from "../shared/intcode";
 import { goalPath } from "./shared";
 
 const input = fs
@@ -86,7 +86,7 @@ function deserPos(input: string): [number, number] {
 }
 
 function runPath(initialPath: number[], lastStep: number) {
-  const runner = intcodeNext(input);
+  const runner = intcode(input);
   let next = runner.next();
   assert(next.value.type === feedbackType.INPUT);
   for (let dir of initialPath) {

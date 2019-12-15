@@ -9,12 +9,16 @@ const input = fs
 
 const runner = intcode(input);
 let counter = 0;
-let done = false;
-while (!done) {
+while (true) {
   let state = runner.next();
+  if (state.value.type === "HALT") {
+    break;
+  }
   state = runner.next();
   state = runner.next();
-  counter += state.value === 2 ? 1 : 0;
-  done = Boolean(state.done);
+  if (state.value.type !== "OUTPUT") {
+    throw new Error("Expected output");
+  }
+  counter += state.value.output === 2 ? 1 : 0;
 }
 console.log(counter);

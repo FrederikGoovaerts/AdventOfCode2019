@@ -7,6 +7,9 @@ const input = fs
   .map(Number);
 
 const runner = intcode(input);
-runner.next(5);
-let result = runner.next(5).value;
-console.log(result);
+runner.next();
+let result = runner.next(5);
+if (result.value.type !== "OUTPUT") {
+  throw new Error("Expected intcode to produce output");
+}
+console.log(result.value.output);

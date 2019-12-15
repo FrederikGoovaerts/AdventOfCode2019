@@ -10,7 +10,7 @@ const input = fs
 const runner = intcode(input);
 runner.next(1);
 let result = runner.next(1);
-while (!result.done) {
-  console.log(result.value);
-  result = runner.next(1);
+if (result.value.type !== "OUTPUT") {
+  throw new Error("Expected intcode to produce output");
 }
+console.log(result.value.output);

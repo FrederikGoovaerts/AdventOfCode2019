@@ -8,9 +8,13 @@ const input = fs
   .map(Number);
 
 const runner = intcode(input);
+runner.next();
 runner.next(1);
-let result = runner.next(1).value;
-while (result === 0) {
-  result = runner.next(1).value;
+let result = runner.next();
+while (result.value.type === "OUTPUT" && result.value.output === 0) {
+  result = runner.next();
 }
-console.log(result);
+if (result.value.type !== "OUTPUT") {
+  throw new Error("Expected intcode to provide output");
+}
+console.log(result.value.output);

@@ -14,7 +14,10 @@ for (let i = 0; i < 100; i++) {
 
     const runner = intcode(program);
     const result = runner.next();
-    if (result.done && result.value[0] === 19690720) {
+    if (result.value.type !== "HALT") {
+      throw new Error("Expected intcode to halt");
+    }
+    if (result.value.output[0] === 19690720) {
       console.log(i * 100 + j);
     }
   }

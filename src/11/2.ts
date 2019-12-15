@@ -25,11 +25,18 @@ let painted: Coord[] = [{ x: 0, y: 0 }];
 const runner = intcode(input);
 
 let state = runner.next();
-while (!state.done) {
-  const newColor = runner.next(painted.some(matches) ? 1 : 0).value as number;
-  paint(newColor);
-  const newDir = runner.next().value as number;
-  updateDirection(newDir);
+while (state.value.type !== "HALT") {
+  let next = runner.next(painted.some(matches) ? 1 : 0);
+  if (next.value.type !== "OUTPUT") {
+    throw new Error("Expected intcode to produce output");
+  }
+  paint(next.value.output);
+
+  next = runner.next();
+  if (next.value.type !== "OUTPUT") {
+    throw new Error("Expected intcode to produce output");
+  }
+  updateDirection(next.value.output);
   state = runner.next();
 }
 const smollest = (prev: number, curr: number) => (curr < prev ? curr : prev);
@@ -39,7 +46,6 @@ const maxX = painted.map(coord => coord.x).reduce(largest);
 const minY = painted.map(coord => coord.y).reduce(smollest);
 const maxY = painted.map(coord => coord.y).reduce(largest);
 let output = "";
-console.log(minX, maxX, minY, maxY);
 for (let y = maxY; y >= minY; y--) {
   for (let x = minX; x <= maxX; x++) {
     if (painted.some((val: Coord) => val.x === x && val.y === y)) {
