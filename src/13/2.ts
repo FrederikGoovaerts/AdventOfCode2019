@@ -1,5 +1,6 @@
 import * as fs from "fs";
-import { intcodeNext, feedback, feedbackType } from "../shared/intcode-next";
+import { intcodeNext, feedbackType } from "../shared/intcode-next";
+const RENDER = true;
 
 const input = fs
   .readFileSync("input", "utf8")
@@ -19,9 +20,21 @@ start();
 async function start() {
   let initDone = false;
   while (true) {
-    const x = getNextOutput();
-    const y = getNextOutput();
-    const val = getNextOutput();
+    const xRes = getNextOutput();
+    if (xRes === undefined) {
+      break;
+    }
+    const yRes = getNextOutput()!;
+    const valRes = getNextOutput()!;
+    const x = xRes[0];
+    const y = yRes[0];
+    const val = valRes[0];
+    if (initDone && (xRes[1] || yRes[1] || valRes[1]) && RENDER) {
+      await new Promise(res => {
+        setTimeout(res, 10);
+      });
+      renderScreen();
+    }
     if (x === -1 && y === 0) {
       initDone = true;
       score = val;
@@ -36,18 +49,15 @@ async function start() {
     if (val === 3) {
       paddleX = x;
     }
-    if (initDone) {
-      // await new Promise(resolve => {
-      //   setTimeout(resolve, 300);
-      // });
-      renderScreen();
-    }
   }
+  console.log(score);
 }
 
-function getNextOutput(): number {
+function getNextOutput(): [number, boolean] | undefined {
+  let hadInput = false;
   let next = runner.next();
-  while (next.value.type === feedbackType.INPUT) {
+  if (next.value.type === feedbackType.INPUT) {
+    hadInput = true;
     if (ballX === paddleX) {
       next = runner.next(0);
     } else {
@@ -55,19 +65,20 @@ function getNextOutput(): number {
     }
   }
   if (next.value.type === feedbackType.OUTPUT) {
-    return next.value.output;
+    return [next.value.output, hadInput];
   }
-  throw new Error("wrong state bud");
+  if (next.value.type === feedbackType.HALT) {
+    return undefined;
+  }
 }
 
 function renderScreen() {
   console.log();
-  let ball = -1;
-  let paddle = -1;
+  let result = "";
   screen.forEach((arr: number[], i: number) => {
-    console.log(arr.map(val => prettify(val)).join(""));
+    result += arr.map(val => prettify(val)).join("") + "\n";
   });
-  console.log(`score: ${score}`);
+  console.log(result + `score: ${score}`);
 }
 
 function prettify(input: number): string {
