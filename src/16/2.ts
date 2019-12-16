@@ -22,10 +22,7 @@ function nextPhase(input: number[]): number[] {
   const length = input.length;
   const phase = [...input];
   for (let shift = length - 2; shift >= 0; shift--) {
-    phase[shift] += phase[shift + 1];
-  }
-  for (let shift = length - 2; shift >= 0; shift--) {
-    phase[shift] = phase[shift] % 10;
+    phase[shift] = (phase[shift] + phase[shift + 1]) % 10;
   }
   return phase;
 }
