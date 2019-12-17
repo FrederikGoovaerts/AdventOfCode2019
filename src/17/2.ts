@@ -21,11 +21,13 @@ const input = fs
 // A: L,6,R,8,L,4,R,8,L,12,
 
 input[0] = 2;
-const main = "A,B,B,C,B,C,B,C,A,A\n".split("").map(val => val.charCodeAt(0));
-const a = "L,6,R,8,L,4,R,8,L,12\n".split("").map(val => val.charCodeAt(0));
-const b = "L,12,R,10,L,4\n".split("").map(val => val.charCodeAt(0));
-const c = "L,12,L,6,L,4,L,4\n".split("").map(val => val.charCodeAt(0));
-const video = "n\n".split("").map(val => val.charCodeAt(0));
+const asciify = (input: string) =>
+  input.split("").map(val => val.charCodeAt(0));
+const main = asciify("A,B,B,C,B,C,B,C,A,A\n");
+const a = asciify("L,6,R,8,L,4,R,8,L,12\n");
+const b = asciify("L,12,R,10,L,4\n");
+const c = asciify("L,12,L,6,L,4,L,4\n");
+const video = asciify("n\n");
 
 const runner = intcode(input);
 let next = runner.next();
