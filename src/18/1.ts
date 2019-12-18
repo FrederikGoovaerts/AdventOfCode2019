@@ -69,7 +69,7 @@ for (let row = 1; row < input.length - 1; row++) {
     } else if (symbol.match(/[A-Z]/)) {
       doorLoc.set(serPos([row, column]), symbol);
     } else if (symbol === "@") {
-      origin = [row, column];
+      originPos = [row, column];
     }
   }
 }
