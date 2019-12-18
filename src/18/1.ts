@@ -2,7 +2,7 @@ import * as fs from "fs";
 import assert from "assert";
 
 const input: string[][] = fs
-  .readFileSync("in5", "utf8")
+  .readFileSync("in3", "utf8")
   .trim()
   .split("\n")
   .map(val => val.split(""));
@@ -12,8 +12,11 @@ const neighbors: Map<string, string[]> = new Map();
 const doorLoc: Map<string, string> = new Map();
 // Map from key name to position
 const keyLocations: Map<string, string> = new Map();
-const keys: Set<string> = new Set();
-let origin: [number, number] = [-1, -1];
+const allKeys: Set<string> = new Set();
+let originPos: [number, number] = [-1, -1];
+
+const lookup: Map<string, { keys: Set<string>; length: number }> = new Map();
+const lookup2: Map<string, number> = new Map();
 
 for (let row = 1; row < input.length - 1; row++) {
   for (let column = 1; column < input[0].length - 1; column++) {
@@ -37,15 +40,15 @@ for (let row = 1; row < input.length - 1; row++) {
     }
     if (symbol.match(/[a-z]/)) {
       keyLocations.set(symbol, serPos([row, column]));
-      keys.add(symbol);
+      allKeys.add(symbol);
     } else if (symbol.match(/[A-Z]/)) {
       doorLoc.set(serPos([row, column]), symbol);
     } else if (symbol === "@") {
-      origin = [row, column];
+      originPos = [row, column];
     }
   }
 }
-console.log(bestPath(serPos(origin), new Set(), keys, 0, Infinity));
+console.log(bestPath(serPos(originPos), new Set(), allKeys, 0, Infinity, "@"));
 
 // Helpers
 
@@ -54,22 +57,22 @@ function bestPath(
   currentKeys: Set<string>,
   keysLeft: Set<string>,
   currentLength: number,
-  bestKnown: number
+  bestKnown: number,
+  origin: string
 ): number {
   if (keysLeft.size === 0) {
     return 0;
   }
   let currentBest = Infinity;
   for (const target of keysLeft) {
-    const distToTarget = getDistance(
+    const distToTarget = lookupDistance(
       currentPosition,
       keyLocations.get(target)!,
-      currentKeys
+      currentKeys,
+      origin,
+      target
     );
-    if (
-      distToTarget.length !== Infinity &&
-      currentLength + distToTarget.length <= bestKnown
-    ) {
+    if (distToTarget !== Infinity && currentLength + distToTarget < bestKnown) {
       const newCurrKeys = new Set(currentKeys);
       newCurrKeys.add(target);
       const newKeysLeft = new Set(keysLeft);
@@ -78,16 +81,54 @@ function bestPath(
         keyLocations.get(target)!,
         newCurrKeys,
         newKeysLeft,
-        currentLength + distToTarget.length,
-        Math.min(bestKnown, currentBest)
+        currentLength + distToTarget,
+        bestKnown,
+        target
       );
-      if (distToTarget.length + remainingPath < currentBest) {
-        currentBest = distToTarget.length + remainingPath;
-        console.log(currentBest, currentKeys, target);
+      if (distToTarget + remainingPath < currentBest) {
+        currentBest = distToTarget + remainingPath;
       }
     }
   }
   return currentBest;
+}
+
+function lookupDistance(
+  start: string,
+  end: string,
+  keys: Set<string>,
+  origin: string,
+  target: string
+): number {
+  const ser = `${origin},${target}`;
+  if (!lookup.has(ser)) {
+    const dist = getDistance(start, end, allKeys);
+    lookup.set(ser, {
+      length: dist.length,
+      keys: new Set(dist.doorsPassed.map(val => val.toLowerCase()))
+    });
+  }
+  const looked = lookup.get(ser)!;
+  let optimal: boolean = true;
+  for (const key of looked.keys) {
+    if (!keys.has(key)) {
+      optimal = false;
+    }
+  }
+  if (optimal) {
+    return looked.length;
+  }
+  return Infinity;
+
+  // The code below seems unnecessary
+  const ser2 = `${origin},${[...keys].sort().join()},${target}`;
+  if (lookup2.has(ser2)) {
+    return lookup2.get(ser2)!;
+  }
+  const a = getDistance(start, end, keys).length;
+  lookup2.set(ser2, a);
+  console.log(lookup2);
+  return a;
 }
 
 function getDistance(
