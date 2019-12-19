@@ -76,13 +76,13 @@ for (let row = 1; row < input.length - 1; row++) {
 
 const visited: Set<string> = new Set();
 
-const dijkstraQueue: Queue<Node> = new Queue();
-dijkstraQueue.enqueue({ pos: serPos(origin), length: 0, keys: "" });
+const bfsQueue: Queue<Node> = new Queue();
+const start = { pos: serPos(origin), length: 0, keys: "" };
+bfsQueue.enqueue(start);
+visited.add(serNode(start));
+
 while (true) {
-  const curr = dijkstraQueue.dequeue()!;
-  if (visited.has(serNode(curr))) {
-    continue;
-  }
+  const curr = bfsQueue.dequeue()!;
   const nextList = neighbors.get(curr.pos)!;
   for (const next of nextList) {
     if (
@@ -109,10 +109,10 @@ while (true) {
       };
     }
     if (!visited.has(serNode(nextNode))) {
-      dijkstraQueue.enqueue(nextNode);
+      bfsQueue.enqueue(nextNode);
+      visited.add(serNode(nextNode));
     }
   }
-  visited.add(serNode(curr));
 }
 
 function serPos(input: [number, number]): string {
