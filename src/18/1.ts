@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
 const input: string[][] = fs
-  .readFileSync("in4", "utf8")
+  .readFileSync("input", "utf8")
   .trim()
   .split("\n")
   .map(val => val.split(""));
@@ -9,7 +9,7 @@ const input: string[][] = fs
 interface Node {
   pos: string;
   length: number;
-  keys: Set<string>;
+  keys: string;
 }
 
 class Queue<T> {
@@ -77,19 +77,27 @@ for (let row = 1; row < input.length - 1; row++) {
 const visited: Set<string> = new Set();
 
 const dijkstraQueue: Queue<Node> = new Queue();
-dijkstraQueue.enqueue({ pos: serPos(origin), length: 0, keys: new Set() });
+dijkstraQueue.enqueue({ pos: serPos(origin), length: 0, keys: "" });
 while (true) {
   const curr = dijkstraQueue.dequeue()!;
+  if (visited.has(serNode(curr))) {
+    continue;
+  }
   const nextList = neighbors.get(curr.pos)!;
   for (const next of nextList) {
-    if (doorLoc.has(next) && !curr.keys.has(doorLoc.get(next)!.toLowerCase())) {
+    if (
+      doorLoc.has(next) &&
+      !curr.keys.includes(doorLoc.get(next)!.toLowerCase())
+    ) {
       continue;
     }
-    let nextNode: Node = curr;
-    if (keyLocations.has(next)) {
-      const newKeys = new Set(curr.keys);
-      newKeys.add(keyLocations.get(next)!);
-      if (newKeys.size === keyLocations.size) {
+    let nextNode: Node;
+    if (
+      keyLocations.has(next) &&
+      !curr.keys.includes(keyLocations.get(next)!)
+    ) {
+      const newKeys = [...curr.keys, keyLocations.get(next)!].sort().join("");
+      if (newKeys.length === keyLocations.size) {
         throw new Error(`${curr.length + 1}`);
       }
       nextNode = { pos: next, length: curr.length + 1, keys: newKeys };
@@ -111,5 +119,5 @@ function serPos(input: [number, number]): string {
   return `${input[0]},${input[1]}`;
 }
 function serNode(input: Node): string {
-  return `${input.pos}${[...input.keys].join()}`;
+  return `${input.pos}${input.keys}`;
 }
