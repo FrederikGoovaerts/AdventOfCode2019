@@ -47,8 +47,6 @@ while (true) {
       }
     }
   }
-  console.log(resX, resY);
-
   if (resX >= 100 && resY >= 100) {
     break;
   }
@@ -60,3 +58,43 @@ while (true) {
   }
 }
 
+let newMatch = true;
+while (newMatch) {
+  let xMatch = counterX - 1;
+  newMatch = false;
+  for (let yMatch = counterY - 1; yMatch >= counterY - 12; yMatch--) {
+    let resX = 0;
+    let resY = 0;
+    for (let x = xMatch; x >= 0; x--) {
+      const runner = intcode(input);
+      let next = runner.next();
+      next = runner.next(x);
+      next = runner.next(yMatch);
+      if (next.value.type === "OUTPUT") {
+        resX += next.value.output;
+        if (next.value.output === 0) {
+          break;
+        }
+      }
+    }
+    for (let y = yMatch; y >= 0; y--) {
+      const runner = intcode(input);
+      let next = runner.next();
+      next = runner.next(xMatch);
+      next = runner.next(y);
+      if (next.value.type === "OUTPUT") {
+        resY += next.value.output;
+        if (next.value.output === 0) {
+          break;
+        }
+      }
+    }
+    if (resX >= 100 && resY >= 100) {
+      newMatch = true;
+      counterX = xMatch;
+      counterY = yMatch;
+      break;
+    }
+  }
+}
+console.log((counterX - 99) * 10000 + (counterY - 99));
