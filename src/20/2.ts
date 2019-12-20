@@ -5,8 +5,12 @@ const input: string[][] = fs
   .split("\n")
   .map(val => val.split(""));
 
+const rowMid = input.length / 2;
+const columnMid = input[0].length / 2;
+
 interface Node {
   pos: string;
+  level: number;
   length: number;
 }
 
@@ -35,7 +39,10 @@ class Queue<T> {
   }
 }
 
-const neighbors: Map<string, string[]> = new Map();
+const neighbors: Map<
+  string,
+  Array<{ pos: string; change: number }>
+> = new Map();
 let origin: string = "";
 let destination: string = "";
 
@@ -58,7 +65,7 @@ for (let row = 1; row < input.length - 1; row++) {
       const locNeighbors = [];
       for (const n of possibleNeighbors) {
         if (input[n[0]][n[1]] === ".") {
-          locNeighbors.push(serPos(n));
+          locNeighbors.push({ pos: serPos(n), change: 0 });
         }
       }
       neighbors.set(serPos([row, column]), locNeighbors);
@@ -86,8 +93,13 @@ for (let row = 0; row <= input.length - 2; row++) {
         }
         if (gates.has(`${symbol}${nextColumn}`)) {
           const neigh = gates.get(`${symbol}${nextColumn}`)!;
-          neighbors.get(neigh)!.push(serPos([row, column - 1]));
-          neighbors.get(serPos([row, column - 1]))!.push(neigh);
+          const change = column < columnMid ? -1 : 1;
+          neighbors
+            .get(neigh)!
+            .push({ pos: serPos([row, column - 1]), change });
+          neighbors
+            .get(serPos([row, column - 1]))!
+            .push({ pos: neigh, change: -change });
         } else {
           gates.set(`${symbol}${nextColumn}`, serPos([row, column - 1]));
         }
@@ -105,8 +117,13 @@ for (let row = 0; row <= input.length - 2; row++) {
         }
         if (gates.has(`${symbol}${nextColumn}`)) {
           const neigh = gates.get(`${symbol}${nextColumn}`)!;
-          neighbors.get(neigh)!.push(serPos([row, column + 2]));
-          neighbors.get(serPos([row, column + 2]))!.push(neigh);
+          const change = column < columnMid ? 1 : -1;
+          neighbors
+            .get(neigh)!
+            .push({ pos: serPos([row, column + 2]), change });
+          neighbors
+            .get(serPos([row, column + 2]))!
+            .push({ pos: neigh, change: -change });
         } else {
           gates.set(`${symbol}${nextColumn}`, serPos([row, column + 2]));
         }
@@ -120,8 +137,13 @@ for (let row = 0; row <= input.length - 2; row++) {
         }
         if (gates.has(`${symbol}${nextRow}`)) {
           const neigh = gates.get(`${symbol}${nextRow}`)!;
-          neighbors.get(neigh)!.push(serPos([row - 1, column]));
-          neighbors.get(serPos([row - 1, column]))!.push(neigh);
+          const change = row < rowMid ? -1 : 1;
+          neighbors
+            .get(neigh)!
+            .push({ pos: serPos([row - 1, column]), change });
+          neighbors
+            .get(serPos([row - 1, column]))!
+            .push({ pos: neigh, change: -change });
         } else {
           gates.set(`${symbol}${nextRow}`, serPos([row - 1, column]));
         }
@@ -139,8 +161,13 @@ for (let row = 0; row <= input.length - 2; row++) {
         }
         if (gates.has(`${symbol}${nextRow}`)) {
           const neigh = gates.get(`${symbol}${nextRow}`)!;
-          neighbors.get(neigh)!.push(serPos([row + 2, column]));
-          neighbors.get(serPos([row + 2, column]))!.push(neigh);
+          const change = row < rowMid ? 1 : -1;
+          neighbors
+            .get(neigh)!
+            .push({ pos: serPos([row + 2, column]), change });
+          neighbors
+            .get(serPos([row + 2, column]))!
+            .push({ pos: neigh, change: -change });
         } else {
           gates.set(`${symbol}${nextRow}`, serPos([row + 2, column]));
         }
@@ -152,7 +179,7 @@ for (let row = 0; row <= input.length - 2; row++) {
 const visited: Set<string> = new Set();
 const bfsQueue: Queue<Node> = new Queue();
 
-const start = { pos: origin, length: 0 };
+const start = { pos: origin, length: 0, level: 0 };
 bfsQueue.enqueue(start);
 visited.add(start.pos);
 
@@ -160,13 +187,17 @@ while (true) {
   const curr = bfsQueue.dequeue()!;
   const nextList = neighbors.get(curr.pos)!;
   for (const next of nextList) {
-    if (next === destination) {
+    if (next.pos === destination && curr.level + next.change === 0) {
       throw new Error(`${curr.length + 1}`);
     }
-    const nextNode: Node = { pos: next, length: curr.length + 1 };
-    if (!visited.has(nextNode.pos)) {
+    const nextNode: Node = {
+      pos: next.pos,
+      length: curr.length + 1,
+      level: curr.level + next.change
+    };
+    if (nextNode.level >= 0 && !visited.has(nextNode.pos + nextNode.level)) {
       bfsQueue.enqueue(nextNode);
-      visited.add(nextNode.pos);
+      visited.add(nextNode.pos + nextNode.level);
     }
   }
 }
