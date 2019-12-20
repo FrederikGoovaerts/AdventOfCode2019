@@ -2,10 +2,13 @@
   "name": "adventofcode2019",
   "version": "1.0.0",
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "comp": "rimraf lib && tsc"
+  },
   "private": true,
   "devDependencies": {
     "@types/node": "^12.12.14",
+    "rimraf": "^3.0.0",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"
   }
