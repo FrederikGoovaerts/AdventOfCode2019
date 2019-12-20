@@ -1,8 +1,7 @@
 import * as fs from "fs";
 
 const input: string[][] = fs
-  .readFileSync("in1", "utf8")
-  .trim()
+  .readFileSync("input", "utf8")
   .split("\n")
   .map(val => val.split(""));
 
@@ -68,8 +67,8 @@ for (let row = 1; row < input.length - 1; row++) {
 }
 
 // Scanning rows, check all gate labels
-for (let row = 0; row < input.length - 2; row++) {
-  for (let column = 0; column < input[0].length - 2; column++) {
+for (let row = 0; row <= input.length - 2; row++) {
+  for (let column = 0; column <= input[0].length - 2; column++) {
     const symbol = input[row][column];
     if (symbol.match(/[A-Z]/)) {
       const prevColumn = input[row]?.[column - 1];
@@ -78,8 +77,6 @@ for (let row = 0; row < input.length - 2; row++) {
       const prevRow = input[row - 1]?.[column];
       const nextRow = input[row + 1][column];
       const nextNextRow = input[row + 2]?.[column];
-      console.log(`${symbol}${nextColumn}`);
-      console.log(`${symbol}${nextRow}`);
       if (column > 0 && nextColumn.match(/[A-Z]/) && prevColumn === ".") {
         if (`${symbol}${nextColumn}` === "AA") {
           origin = serPos([row, column - 1]);
@@ -90,6 +87,7 @@ for (let row = 0; row < input.length - 2; row++) {
         if (gates.has(`${symbol}${nextColumn}`)) {
           const neigh = gates.get(`${symbol}${nextColumn}`)!;
           neighbors.get(neigh)!.push(serPos([row, column - 1]));
+          neighbors.get(serPos([row, column - 1]))!.push(neigh);
         } else {
           gates.set(`${symbol}${nextColumn}`, serPos([row, column - 1]));
         }
@@ -108,6 +106,7 @@ for (let row = 0; row < input.length - 2; row++) {
         if (gates.has(`${symbol}${nextColumn}`)) {
           const neigh = gates.get(`${symbol}${nextColumn}`)!;
           neighbors.get(neigh)!.push(serPos([row, column + 2]));
+          neighbors.get(serPos([row, column + 2]))!.push(neigh);
         } else {
           gates.set(`${symbol}${nextColumn}`, serPos([row, column + 2]));
         }
@@ -122,6 +121,7 @@ for (let row = 0; row < input.length - 2; row++) {
         if (gates.has(`${symbol}${nextRow}`)) {
           const neigh = gates.get(`${symbol}${nextRow}`)!;
           neighbors.get(neigh)!.push(serPos([row - 1, column]));
+          neighbors.get(serPos([row - 1, column]))!.push(neigh);
         } else {
           gates.set(`${symbol}${nextRow}`, serPos([row - 1, column]));
         }
@@ -140,6 +140,7 @@ for (let row = 0; row < input.length - 2; row++) {
         if (gates.has(`${symbol}${nextRow}`)) {
           const neigh = gates.get(`${symbol}${nextRow}`)!;
           neighbors.get(neigh)!.push(serPos([row + 2, column]));
+          neighbors.get(serPos([row + 2, column]))!.push(neigh);
         } else {
           gates.set(`${symbol}${nextRow}`, serPos([row + 2, column]));
         }
@@ -147,8 +148,6 @@ for (let row = 0; row < input.length - 2; row++) {
     }
   }
 }
-console.log(gates);
-console.log({ origin, destination });
 
 const visited: Set<string> = new Set();
 const bfsQueue: Queue<Node> = new Queue();
