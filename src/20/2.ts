@@ -195,9 +195,12 @@ while (true) {
       length: curr.length + 1,
       level: curr.level + next.change
     };
-    if (nextNode.level >= 0 && !visited.has(nextNode.pos + nextNode.level)) {
+    if (
+      nextNode.level >= 0 &&
+      !visited.has(nextNode.pos + "," + nextNode.level)
+    ) {
       bfsQueue.enqueue(nextNode);
-      visited.add(nextNode.pos + nextNode.level);
+      visited.add(nextNode.pos + "," + nextNode.level);
     }
   }
 }
