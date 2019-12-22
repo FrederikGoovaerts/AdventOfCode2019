@@ -108,5 +108,3 @@ const reducedVars = reduceMultipleParameters(
 );
 
 console.log((reducedVars.mult * 2020 + reducedVars.add) % 119315717514047);
-
-console.log((vars.mult * 2020 + vars.add) % 119315717514047);
