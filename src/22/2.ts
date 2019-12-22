@@ -83,18 +83,19 @@ function reduceMultipleParameters(
 ): { mult: number; add: number } {
   if (iterations === 1) {
     return { mult, add };
-  } else if (iterations === 2) {
-    return { mult: mult ** 2 % mod, add: (mult * add + add) % mod };
+  } else if (iterations % 2 === 0) {
+    return reduceMultipleParameters(
+      iterations / 2,
+      mod,
+      mult ** 2 % mod,
+      (mult * add + add) % mod
+    );
   } else {
-    let itTemp = iterations;
-    let muTemp = mult;
-    let adTemp = add;
-    if (itTemp % 2 === 1) {
-      muTemp = muTemp ** 2 % mod;
-      adTemp = (muTemp * adTemp + adTemp) % mod;
-      itTemp--;
-    }
-    return reduceMultipleParameters(itTemp / 2, mod, muTemp, adTemp);
+    const temp = reduceMultipleParameters(iterations - 1, mod, mult, add);
+    return {
+      mult: (mult * temp.mult) % mod,
+      add: (add + mult * temp.add) % mod
+    };
   }
 }
 
@@ -105,5 +106,7 @@ const reducedVars = reduceMultipleParameters(
   vars.mult,
   vars.add
 );
+
+console.log((reducedVars.mult * 2020 + reducedVars.add) % 119315717514047);
 
 console.log((vars.mult * 2020 + vars.add) % 119315717514047);
