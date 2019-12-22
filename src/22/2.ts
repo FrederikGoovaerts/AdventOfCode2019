@@ -13,7 +13,8 @@ function unshuffleVars(
     .map(val => interpret(val))
     .filter(val => val !== undefined) as Deal[];
 
-  // Reach a state where unshuffling according to the inputfile is the same as mult * x + add
+  // Reach a state where unshuffling according to the inputfile is the
+  // same as (mult * x + add) % deckSize
   let mult = 1;
   let add = 0;
 
@@ -71,5 +72,38 @@ function modInverse(a: number, m: number) {
   return ((y % m) + m) % m;
 }
 
-const vars = unshuffleVars("input", 10007);
-console.log((vars.mult * 3377 + vars.add) % 10007);
+// attempt to reduce the amount of iterations:
+// mult * (mult * X + add) + add => mult^2 * X + mult * add + add
+// This cuts the amount of iterations in half
+function reduceMultipleParameters(
+  iterations: number,
+  mod: number,
+  mult: number,
+  add: number
+): { mult: number; add: number } {
+  if (iterations === 1) {
+    return { mult, add };
+  } else if (iterations === 2) {
+    return { mult: mult ** 2 % mod, add: (mult * add + add) % mod };
+  } else {
+    let itTemp = iterations;
+    let muTemp = mult;
+    let adTemp = add;
+    if (itTemp % 2 === 1) {
+      muTemp = muTemp ** 2 % mod;
+      adTemp = (muTemp * adTemp + adTemp) % mod;
+      itTemp--;
+    }
+    return reduceMultipleParameters(itTemp / 2, mod, muTemp, adTemp);
+  }
+}
+
+const vars = unshuffleVars("input", 119315717514047);
+const reducedVars = reduceMultipleParameters(
+  101741582076661,
+  119315717514047,
+  vars.mult,
+  vars.add
+);
+
+console.log((vars.mult * 2020 + vars.add) % 119315717514047);
