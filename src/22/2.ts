@@ -15,28 +15,31 @@ function unshuffleVars(
 
   // Reach a state where unshuffling according to the inputfile is the
   // same as (mult * x + add) % deckSize
-  let mult = 1;
-  let add = 0;
+  let mult = 1n;
+  let add = 0n;
 
   for (const op of input.reverse()) {
     if (op.type === "NEW") {
       // from 2a: deckSize - 1 - state
       // => (-1) * state + (deckSize - 1)
-      mult = posMod(-mult, deckSize);
-      add = posMod(-add + (deckSize - 1), deckSize);
+      mult = posMod(-mult, BigInt(deckSize));
+      add = posMod(-add + BigInt(deckSize - 1), BigInt(deckSize));
     } else if (op.type === "CUT") {
       // from 2a: state + op.value
       // => state + op.value
-      add = posMod((add + op.value) % deckSize, deckSize);
+      add = posMod(
+        (add + BigInt(op.value)) % BigInt(deckSize),
+        BigInt(deckSize)
+      );
     } else if (op.type === "INC") {
       // from 2a: state * modInverse(op.value, deckSize)
       // => (modInverse(op.value, deckSize)) * state
       const inverse = modInverse(op.value, deckSize);
-      mult = posMod(mult * inverse, deckSize);
-      add = posMod(add * inverse, deckSize);
+      mult = posMod(mult * BigInt(inverse), BigInt(deckSize));
+      add = posMod(add * BigInt(inverse), BigInt(deckSize));
     }
   }
-  return { add, mult };
+  return { add: Number(add), mult: Number(mult) };
 }
 
 function interpret(input: string): Deal | undefined {
@@ -50,8 +53,8 @@ function interpret(input: string): Deal | undefined {
   return undefined;
 }
 
-function posMod(a: number, m: number): number {
-  return (a + Math.ceil(Math.abs(a) / m) * m) % m;
+function posMod(a: bigint, m: bigint): bigint {
+  return (a + m) % m;
 }
 
 function modInverse(a: number, m: number) {
