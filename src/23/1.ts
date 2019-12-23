@@ -6,7 +6,6 @@ const input = fs
   .trim()
   .split(",")
   .map(Number);
-console.log(input);
 
 const messageQueue = new Map<number, Array<[number, number]>>();
 for (let i = 0; i < 50; i++) {
