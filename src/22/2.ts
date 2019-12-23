@@ -79,22 +79,22 @@ function modInverse(a: number, m: number) {
 // mult * (mult * X + add) + add => mult^2 * X + mult * add + add
 // This cuts the amount of iterations in half
 function reduceMultipleParameters(
-  iterations: number,
-  mod: number,
-  mult: number,
-  add: number
-): { mult: number; add: number } {
-  if (iterations === 1) {
+  iterations: bigint,
+  mod: bigint,
+  mult: bigint,
+  add: bigint
+): { mult: bigint; add: bigint } {
+  if (iterations === 1n) {
     return { mult, add };
-  } else if (iterations % 2 === 0) {
+  } else if (iterations % 2n === 0n) {
     return reduceMultipleParameters(
-      iterations / 2,
+      iterations / 2n,
       mod,
-      mult ** 2 % mod,
+      mult ** 2n % mod,
       (mult * add + add) % mod
     );
   } else {
-    const temp = reduceMultipleParameters(iterations - 1, mod, mult, add);
+    const temp = reduceMultipleParameters(iterations - 1n, mod, mult, add);
     return {
       mult: (mult * temp.mult) % mod,
       add: (add + mult * temp.add) % mod
@@ -104,10 +104,12 @@ function reduceMultipleParameters(
 
 const vars = unshuffleVars("input", 119315717514047);
 const reducedVars = reduceMultipleParameters(
-  101741582076661,
-  119315717514047,
-  vars.mult,
-  vars.add
+  101741582076661n,
+  119315717514047n,
+  BigInt(vars.mult),
+  BigInt(vars.add)
 );
 
-console.log((reducedVars.mult * 2020 + reducedVars.add) % 119315717514047);
+console.log(
+  Number((reducedVars.mult * 2020n + reducedVars.add) % 119315717514047n)
+);
