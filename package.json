@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "comp": "rimraf lib && tsc"
+    "clean": "rimraf src/**/*.js",
+    "build": "npm run clean && tsc"
   },
   "private": true,
   "devDependencies": {
