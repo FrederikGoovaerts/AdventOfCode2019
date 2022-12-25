@@ -1,0 +1,1 @@
+> DEPRECATED: This repository has been merged into https://github.com/FrederikGoovaerts/AdventOfCode
